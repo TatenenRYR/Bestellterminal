@@ -4,21 +4,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Schnitzel-Kiosk</title>
   <style>
+    :root {
+      --sidebar-width: 240px;
+    }
+    * {
+      box-sizing: border-box;
+    }
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f5f5f5;
       color: #333;
       display: flex;
+      flex-direction: row;
       height: 100vh;
-      overflow: hidden;
     }
     aside {
-      width: 260px;
+      width: var(--sidebar-width);
       background: rgba(255, 255, 255, 0.95);
       padding: 20px;
       overflow-y: auto;
       box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+      flex-shrink: 0;
     }
     aside h3 {
       margin-top: 0;
@@ -44,7 +51,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      height: 100vh;
     }
     header {
       padding: 20px;
@@ -131,129 +138,125 @@
     button:active {
       transform: scale(0.98);
     }
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      aside {
+        width: 100%;
+        order: 2;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      aside ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      aside li {
+        flex: 1 0 30%;
+      }
+      main {
+        order: 1;
+        height: auto;
+      }
+    }
   </style>
 </head>
 <body>
   <aside>
     <h3>Kategorien</h3>
     <ul>
-      <li><button onclick="filterCategory('Alle')">Alle</button></li>
-      <li><button onclick="filterCategory('Schnitzel')">Schnitzel</button></li>
-      <li><button onclick="filterCategory('Beilagen')">Beilagen</button></li>
-      <li><button onclick="filterCategory('Getränke')">Getränke</button></li>
-      <li><button onclick="filterCategory('Desserts')">Desserts</button></li>
+      <li><button onclick="showItems('Schnitzel')">Schnitzel</button></li>
+      <li><button onclick="showItems('Beilagen')">Beilagen</button></li>
+      <li><button onclick="showItems('Getränke')">Getränke</button></li>
     </ul>
   </aside>
   <main>
     <header>
       <h1>Schnitzel-Kiosk</h1>
     </header>
-    <section id="items"></section>
-    <section id="cart">
+    <div id="items"></div>
+    <div id="cart">
       <h3>Warenkorb</h3>
       <ul id="cart-items"></ul>
-      <div id="total">Gesamt: 0.00 €</div>
-      <small>inkl. 7 % MwSt. für Außerhausverkauf</small>
-      <input type="text" placeholder="Gutscheincode eingeben" id="coupon" />
-      <button onclick="applyCoupon()">Coupon anwenden</button>
-    </section>
+      <div id="total"></div>
+      <input type="text" id="coupon" placeholder="Gutscheincode eingeben" />
+      <button onclick="applyCoupon()">Coupon einlösen</button>
+      <p>Alle Preise inkl. MwSt., außer Haus</p>
+    </div>
   </main>
   <script>
-    const itemsData = [
-      {
-        name: 'Wiener Schnitzel',
-        price: 10.99,
-        image: 'https://images.pexels.com/photos/616401/pexels-photo-616401.jpeg',
-        category: 'Schnitzel'
-      },
-      {
-        name: 'Chicken Schnitzel',
-        price: 9.49,
-        image: 'https://images.pexels.com/photos/2097090/pexels-photo-2097090.jpeg',
-        category: 'Schnitzel'
-      },
-      {
-        name: 'Pommes Frites',
-        price: 2.99,
-        image: 'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg',
-        category: 'Beilagen'
-      },
-      {
-        name: 'Cola 0.5L',
-        price: 1.99,
-        image: 'https://images.pexels.com/photos/8883/pexels-photo.jpg',
-        category: 'Getränke'
-      },
-      {
-        name: 'Apfeltasche',
-        price: 2.49,
-        image: 'https://images.pexels.com/photos/4109994/pexels-photo-4109994.jpeg',
-        category: 'Desserts'
-      }
-    ];let cart = [];
-let currentCategory = 'Alle';
+    const menu = {
+      'Schnitzel': [
+        { name: 'Wiener Schnitzel', price: 8.99, img: 'https://images.pexels.com/photos/704569/pexels-photo-704569.jpeg' },
+        { name: 'Jägerschnitzel', price: 9.99, img: 'https://images.pexels.com/photos/2403391/pexels-photo-2403391.jpeg' }
+      ],
+      'Beilagen': [
+        { name: 'Pommes Frites', price: 2.99, img: 'https://images.pexels.com/photos/1583884/pexels-photo-1583884.jpeg' },
+        { name: 'Kartoffelsalat', price: 2.49, img: 'https://images.pexels.com/photos/57043/pexels-photo-57043.jpeg' }
+      ],
+      'Getränke': [
+        { name: 'Cola 0,5L', price: 1.99, img: 'https://images.pexels.com/photos/108821/pexels-photo-108821.jpeg' },
+        { name: 'Mineralwasser 0,5L', price: 1.49, img: 'https://images.pexels.com/photos/416528/pexels-photo-416528.jpeg' }
+      ]
+    };let cart = [];
 let discount = 0;
 
-function renderItems() {
-  const container = document.getElementById('items');
-  container.innerHTML = '';
-  itemsData.forEach(item => {
-    if (currentCategory === 'Alle' || item.category === currentCategory) {
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `
-        <img src="${item.image}?auto=compress&cs=tinysrgb&h=200" alt="${item.name}">
-        <div class="info">
-          <h4>${item.name}</h4>
-          <p>${item.price.toFixed(2)} €</p>
-          <button onclick='addToCart(${JSON.stringify(item)})'>Hinzufügen</button>
-        </div>
-      `;
-      container.appendChild(div);
-    }
+function showItems(category) {
+  const itemsDiv = document.getElementById('items');
+  itemsDiv.innerHTML = '';
+  menu[category].forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <img src="${item.img}" alt="${item.name}" />
+      <div class="info">
+        <h4>${item.name}</h4>
+        <p>${item.price.toFixed(2)} €</p>
+        <button onclick='addToCart("${item.name}", ${item.price})'>Hinzufügen</button>
+      </div>
+    `;
+    itemsDiv.appendChild(div);
   });
 }
 
-function filterCategory(cat) {
-  currentCategory = cat;
-  renderItems();
-}
-
-function addToCart(item) {
-  cart.push(item);
-  renderCart();
+function addToCart(name, price) {
+  cart.push({ name, price });
+  updateCart();
 }
 
 function removeFromCart(index) {
   cart.splice(index, 1);
-  renderCart();
+  updateCart();
 }
 
-function renderCart() {
-  const ul = document.getElementById('cart-items');
-  ul.innerHTML = '';
-  cart.forEach((item, i) => {
+function updateCart() {
+  const cartList = document.getElementById('cart-items');
+  cartList.innerHTML = '';
+  cart.forEach((item, index) => {
     const li = document.createElement('li');
-    li.innerHTML = `${item.name} - ${item.price.toFixed(2)} € <button onclick="removeFromCart(${i})">✖</button>`;
-    ul.appendChild(li);
+    li.innerHTML = `${item.name} - ${item.price.toFixed(2)} € <button onclick='removeFromCart(${index})'>X</button>`;
+    cartList.appendChild(li);
   });
-  const total = cart.reduce((sum, item) => sum + item.price, 0) * (1 - discount);
-  document.getElementById('total').innerText = `Gesamt: ${total.toFixed(2)} €`;
+  const sum = cart.reduce((total, item) => total + item.price, 0);
+  const discounted = sum * (1 - discount);
+  document.getElementById('total').innerText = `Gesamt: ${discounted.toFixed(2)} €`;
 }
 
 function applyCoupon() {
   const code = document.getElementById('coupon').value.trim().toLowerCase();
   if (code === 'schnitzel10') {
-    discount = 0.1;
-    alert('10 % Rabatt aktiviert!');
-    renderCart();
+    discount = 0.10;
+    updateCart();
+    alert('Gutschein erfolgreich angewendet: 10% Rabatt!');
   } else {
-    alert('Ungültiger Code.');
+    alert('Ungültiger Gutschein');
   }
 }
 
-renderItems();
-renderCart();
+showItems('Schnitzel');
 
   </script>
 </body>
