@@ -7,25 +7,61 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f0f0f0;
+      background: #f9f9f9;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sidebar {
+      width: 250px;
+      background: #2e7d32;
+      color: white;
+      padding: 1rem;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      margin-bottom: 1rem;
+    }
+    .sidebar button {
+      background: none;
+      color: white;
+      border: none;
+      text-align: left;
+      padding: 0.5rem 0;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .sidebar button.active {
+      font-weight: bold;
+      text-decoration: underline;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
     .header {
-      background: green;
+      background: #388e3c;
       color: white;
       padding: 1rem;
       text-align: center;
       font-size: 2rem;
     }
     .menu {
+      flex: 1;
+      overflow-y: auto;
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 1rem;
       padding: 1rem;
+      box-sizing: border-box;
     }
     .card {
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
       padding: 1rem;
       display: flex;
       flex-direction: column;
@@ -46,19 +82,16 @@
     .card button {
       margin-top: auto;
       padding: 0.5rem 1rem;
-      background: green;
+      background: #2e7d32;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     .cart {
-      position: fixed;
-      bottom: 0;
-      width: 100%;
       background: white;
       padding: 1rem;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -66,21 +99,32 @@
   </style>
 </head>
 <body>
-  <div class="header">Schnitzel bestellen</div>
-  <div class="menu" id="menu"></div>
-  <div class="cart">
-    <div id="cart-count">0 Artikel</div>
-    <button onclick="checkout()">Bestellen</button>
+  <div class="sidebar">
+    <h2>Kategorien</h2>
+    <button class="active" onclick="filterMenu('schnitzel')">Schnitzel</button>
+    <button onclick="filterMenu('beilagen')">Beilagen</button>
+    <button onclick="filterMenu('getraenke')">Getränke</button>
+    <button onclick="filterMenu('desserts')">Desserts</button>
+  </div>
+  <div class="main">
+    <div class="header">Schnitzel Terminal</div>
+    <div class="menu" id="menu"></div>
+    <div class="cart">
+      <div id="cart-count">0 Artikel</div>
+      <button onclick="checkout()">Bestellen</button>
+    </div>
   </div>  <script>
     const menuItems = [
-      { name: "Wiener Schnitzel Menü", desc: "Mit Pommes und Getränk", price: 10.99, img: "https://via.placeholder.com/250x150?text=Wiener+Schnitzel" },
-      { name: "Jägerschnitzel Menü", desc: "Mit Pilzsoße, Pommes & Getränk", price: 11.49, img: "https://via.placeholder.com/250x150?text=J%C3%A4gerschnitzel" },
-      { name: "Zigeunerschnitzel Menü", desc: "Mit Paprikasoße, Reis & Getränk", price: 11.29, img: "https://via.placeholder.com/250x150?text=Zigeunerschnitzel" },
-      { name: "Schnitzel Hawaii Menü", desc: "Mit Ananas, Käse, Pommes & Getränk", price: 11.99, img: "https://via.placeholder.com/250x150?text=Schnitzel+Hawaii" },
+      { name: "Wiener Schnitzel Menü", desc: "Mit Pommes und Getränk", price: 10.99, category: "schnitzel", img: "https://via.placeholder.com/250x150?text=Wiener+Schnitzel" },
+      { name: "Jägerschnitzel Menü", desc: "Mit Pilzsoße, Pommes & Getränk", price: 11.49, category: "schnitzel", img: "https://via.placeholder.com/250x150?text=J%C3%A4gerschnitzel" },
+      { name: "Pommes Frites", desc: "Kross und heiß", price: 2.99, category: "beilagen", img: "https://via.placeholder.com/250x150?text=Pommes" },
+      { name: "Cola 0,5L", desc: "Erfrischend kalt", price: 1.99, category: "getraenke", img: "https://via.placeholder.com/250x150?text=Cola" },
+      { name: "Apfeltasche", desc: "Warm und fruchtig", price: 2.49, category: "desserts", img: "https://via.placeholder.com/250x150?text=Apfeltasche" },
     ];
 
-    const menu = document.getElementById('menu');
     let cartCount = 0;
+    const menu = document.getElementById('menu');
+    const categoryButtons = document.querySelectorAll('.sidebar button');
 
     function updateCart() {
       document.getElementById('cart-count').innerText = `${cartCount} Artikel`;
@@ -94,20 +138,27 @@
 
     function checkout() {
       alert("Bestellung wird verarbeitet...");
-      // Hier kannst du API-Aufruf an Hypersoft integrieren
     }
 
-    menuItems.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <img src="${item.img}" alt="${item.name}" />
-        <h3>${item.name}</h3>
-        <p>${item.desc}</p>
-        <p><strong>${item.price.toFixed(2)} €</strong></p>
-        <button onclick='addToCart(${JSON.stringify(item)})'>Auswählen</button>
-      `;
-      menu.appendChild(card);
-    });
+    function filterMenu(category) {
+      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.sidebar button[onclick*='${category}']`).classList.add('active');
+      menu.innerHTML = '';
+      menuItems.filter(item => item.category === category).forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${item.img}" alt="${item.name}" />
+          <h3>${item.name}</h3>
+          <p>${item.desc}</p>
+          <p><strong>${item.price.toFixed(2)} €</strong></p>
+          <button onclick='addToCart(${JSON.stringify(item)})'>Auswählen</button>
+        `;
+        menu.appendChild(card);
+      });
+    }
+
+    // Initialanzeige
+    filterMenu('schnitzel');
   </script></body>
 </html>
