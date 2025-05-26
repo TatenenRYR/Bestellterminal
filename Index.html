@@ -1,0 +1,113 @@
+<!DOCTYPE html><html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schnitzel Terminal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #f0f0f0;
+    }
+    .header {
+      background: green;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-size: 2rem;
+    }
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .card h3 {
+      margin: 0.5rem 0 0.2rem;
+    }
+    .card p {
+      margin: 0.2rem 0;
+    }
+    .card button {
+      margin-top: auto;
+      padding: 0.5rem 1rem;
+      background: green;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cart {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      padding: 1rem;
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">Schnitzel bestellen</div>
+  <div class="menu" id="menu"></div>
+  <div class="cart">
+    <div id="cart-count">0 Artikel</div>
+    <button onclick="checkout()">Bestellen</button>
+  </div>  <script>
+    const menuItems = [
+      { name: "Wiener Schnitzel Menü", desc: "Mit Pommes und Getränk", price: 10.99, img: "https://via.placeholder.com/250x150?text=Wiener+Schnitzel" },
+      { name: "Jägerschnitzel Menü", desc: "Mit Pilzsoße, Pommes & Getränk", price: 11.49, img: "https://via.placeholder.com/250x150?text=J%C3%A4gerschnitzel" },
+      { name: "Zigeunerschnitzel Menü", desc: "Mit Paprikasoße, Reis & Getränk", price: 11.29, img: "https://via.placeholder.com/250x150?text=Zigeunerschnitzel" },
+      { name: "Schnitzel Hawaii Menü", desc: "Mit Ananas, Käse, Pommes & Getränk", price: 11.99, img: "https://via.placeholder.com/250x150?text=Schnitzel+Hawaii" },
+    ];
+
+    const menu = document.getElementById('menu');
+    let cartCount = 0;
+
+    function updateCart() {
+      document.getElementById('cart-count').innerText = `${cartCount} Artikel`;
+    }
+
+    function addToCart(item) {
+      cartCount++;
+      updateCart();
+      alert(`${item.name} zum Warenkorb hinzugefügt.`);
+    }
+
+    function checkout() {
+      alert("Bestellung wird verarbeitet...");
+      // Hier kannst du API-Aufruf an Hypersoft integrieren
+    }
+
+    menuItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${item.img}" alt="${item.name}" />
+        <h3>${item.name}</h3>
+        <p>${item.desc}</p>
+        <p><strong>${item.price.toFixed(2)} €</strong></p>
+        <button onclick='addToCart(${JSON.stringify(item)})'>Auswählen</button>
+      `;
+      menu.appendChild(card);
+    });
+  </script></body>
+</html>
