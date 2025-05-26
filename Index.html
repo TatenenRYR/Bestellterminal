@@ -7,15 +7,15 @@
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #f9f9f9;
+      background: #ffffffee;
       display: flex;
       height: 100vh;
       overflow: hidden;
     }
     .sidebar {
       width: 250px;
-      background: #2e7d32;
-      color: white;
+      background: rgba(255, 255, 255, 0.95);
+      border-right: 1px solid #ddd;
       padding: 1rem;
       box-sizing: border-box;
       display: flex;
@@ -23,19 +23,23 @@
     }
     .sidebar h2 {
       margin-bottom: 1rem;
+      color: #444;
     }
     .sidebar button {
       background: none;
-      color: white;
+      color: #333;
       border: none;
       text-align: left;
       padding: 0.5rem 0;
       font-size: 1rem;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
     .sidebar button.active {
       font-weight: bold;
-      text-decoration: underline;
+      color: #007e3a;
     }
     .main {
       flex: 1;
@@ -43,11 +47,12 @@
       flex-direction: column;
     }
     .header {
-      background: #388e3c;
-      color: white;
+      background: #ffffffdd;
+      color: #222;
       padding: 1rem;
       text-align: center;
       font-size: 2rem;
+      border-bottom: 1px solid #ddd;
     }
     .menu {
       flex: 1;
@@ -59,13 +64,17 @@
       box-sizing: border-box;
     }
     .card {
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.02);
     }
     .card img {
       width: 100%;
@@ -75,43 +84,55 @@
     }
     .card h3 {
       margin: 0.5rem 0 0.2rem;
+      text-align: center;
     }
     .card p {
       margin: 0.2rem 0;
+      text-align: center;
     }
     .card button {
       margin-top: auto;
       padding: 0.5rem 1rem;
-      background: #2e7d32;
+      background: #007e3a;
       color: white;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     .cart {
-      background: white;
+      background: rgba(255, 255, 255, 0.95);
       padding: 1rem;
-      box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      border-top: 1px solid #ddd;
+    }
+    .icon {
+      width: 20px;
+      height: 20px;
     }
   </style>
 </head>
 <body>
   <div class="sidebar">
     <h2>Kategorien</h2>
-    <button class="active" onclick="filterMenu('schnitzel')">Schnitzel</button>
-    <button onclick="filterMenu('beilagen')">Beilagen</button>
-    <button onclick="filterMenu('getraenke')">Getränke</button>
-    <button onclick="filterMenu('desserts')">Desserts</button>
+    <button class="active" onclick="filterMenu('schnitzel')">🍖 Schnitzel</button>
+    <button onclick="filterMenu('beilagen')">🍟 Beilagen</button>
+    <button onclick="filterMenu('getraenke')">🥤 Getränke</button>
+    <button onclick="filterMenu('desserts')">🍰 Desserts</button>
   </div>
   <div class="main">
     <div class="header">Schnitzel Terminal</div>
     <div class="menu" id="menu"></div>
     <div class="cart">
-      <div id="cart-count">0 Artikel</div>
-      <button onclick="checkout()">Bestellen</button>
+      <div>
+        <strong id="cart-count">0 Artikel</strong>
+      </div>
+      <div>
+        <strong id="total-sum">0,00 €</strong>
+        <button onclick="checkout()">Bestellen</button>
+      </div>
     </div>
   </div>  <script>
     const menuItems = [
@@ -123,17 +144,21 @@
     ];
 
     let cartCount = 0;
+    let totalSum = 0;
     const menu = document.getElementById('menu');
     const categoryButtons = document.querySelectorAll('.sidebar button');
+    const cartCountDisplay = document.getElementById('cart-count');
+    const totalSumDisplay = document.getElementById('total-sum');
 
     function updateCart() {
-      document.getElementById('cart-count').innerText = `${cartCount} Artikel`;
+      cartCountDisplay.innerText = `${cartCount} Artikel`;
+      totalSumDisplay.innerText = `${totalSum.toFixed(2)} €`;
     }
 
     function addToCart(item) {
       cartCount++;
+      totalSum += item.price;
       updateCart();
-      alert(`${item.name} zum Warenkorb hinzugefügt.`);
     }
 
     function checkout() {
