@@ -199,16 +199,14 @@ body {
 <body>
   <div class="sidebar">
     <h2>Kategorien</h2>
-    <button class="active">Schnitzel</button>
-    <button>Beilagen</button>
-    <button>Getränke</button>
-    <button>Desserts</button>
+    <button class="active" onclick="filterCategory('Schnitzel', this)">Schnitzel</button>
+    <button onclick="filterCategory('Beilagen', this)">Beilagen</button>
+    <button onclick="filterCategory('Getränke', this)">Getränke</button>
+    <button onclick="filterCategory('Desserts', this)">Desserts</button>
   </div>
   <div class="main">
     <div class="header">Schnitzel Terminal</div>
-    <div class="menu" id="menu">
-      <!-- Dynamischer Inhalt wird hier eingefügt -->
-    </div>
+    <div class="menu" id="menu"></div>
     <div class="cart">
       <h3>Warenkorb</h3>
       <div class="cart-items" id="cart-items"></div>
@@ -228,24 +226,28 @@ body {
     </div>
   </div>  <script>
     const menuItems = [
-      {
-        name: 'Wiener Schnitzel',
-        price: 10.99,
-        image: 'https://source.unsplash.com/400x300/?schnitzel'
-      },
-      {
-        name: 'Chicken Schnitzel',
-        price: 9.49,
-        image: 'https://source.unsplash.com/400x300/?chicken'
-      }
+      { name: 'Wiener Schnitzel', price: 10.99, image: 'https://source.unsplash.com/400x300/?schnitzel', category: 'Schnitzel' },
+      { name: 'Chicken Schnitzel', price: 9.49, image: 'https://source.unsplash.com/400x300/?chicken', category: 'Schnitzel' },
+      { name: 'Pommes Frites', price: 2.99, image: 'https://source.unsplash.com/400x300/?fries', category: 'Beilagen' },
+      { name: 'Cola 0.5L', price: 1.99, image: 'https://source.unsplash.com/400x300/?cola', category: 'Getränke' },
+      { name: 'Apfeltasche', price: 2.49, image: 'https://source.unsplash.com/400x300/?applepie', category: 'Desserts' }
     ];
 
     const cart = [];
+    let currentCategory = 'Schnitzel';
+
+    function filterCategory(category, button) {
+      currentCategory = category;
+      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      renderMenu();
+    }
 
     function renderMenu() {
       const menu = document.getElementById('menu');
       menu.innerHTML = '';
-      menuItems.forEach(item => {
+      const filtered = menuItems.filter(item => item.category === currentCategory);
+      filtered.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
@@ -294,7 +296,6 @@ body {
       renderCart();
     }
 
-    // Initialisierung
     renderMenu();
     renderCart();
   </script></body>
