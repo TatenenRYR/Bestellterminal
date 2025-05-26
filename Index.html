@@ -103,14 +103,46 @@
       background: rgba(255, 255, 255, 0.95);
       padding: 1rem;
       box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+      border-top: 1px solid #ddd;
+    }
+    .cart-items {
+      max-height: 200px;
+      overflow-y: auto;
+      margin-bottom: 0.5rem;
+    }
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.3rem 0;
+    }
+    .cart-item button {
+      background: transparent;
+      border: none;
+      color: red;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .cart-summary {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-top: 1px solid #ddd;
     }
-    .icon {
-      width: 20px;
-      height: 20px;
+    .checkout {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .checkout button {
+      padding: 0.7rem 1.5rem;
+      font-size: 1rem;
+      background: #007e3a;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .checkout select {
+      margin-top: 0.5rem;
+      padding: 0.5rem;
     }
   </style>
 </head>
@@ -126,48 +158,69 @@
     <div class="header">Schnitzel Terminal</div>
     <div class="menu" id="menu"></div>
     <div class="cart">
-      <div>
+      <div class="cart-items" id="cart-items"></div>
+      <div class="cart-summary">
         <strong id="cart-count">0 Artikel</strong>
-      </div>
-      <div>
         <strong id="total-sum">0,00 €</strong>
-        <button onclick="checkout()">Bestellen</button>
+      </div>
+      <div class="checkout">
+        <button onclick="checkout()">Jetzt bezahlen</button><br>
+        <select>
+          <option>Barzahlung</option>
+          <option>Kartenzahlung</option>
+          <option>Apple Pay</option>
+        </select>
       </div>
     </div>
   </div>  <script>
     const menuItems = [
-      { name: "Wiener Schnitzel Menü", desc: "Mit Pommes und Getränk", price: 10.99, category: "schnitzel", img: "https://cdn.pixabay.com/photo/2020/06/28/09/27/schnitzel-5347990_1280.jpg" },
-      { name: "Jägerschnitzel Menü", desc: "Mit Pilzsoße, Pommes & Getränk", price: 11.49, category: "schnitzel", img: "https://cdn.pixabay.com/photo/2023/02/01/12/05/jagerschnitzel-7760036_1280.jpg" },
-      { name: "Pommes Frites", desc: "Kross und heiß", price: 2.99, category: "beilagen", img: "https://cdn.pixabay.com/photo/2017/05/07/08/56/french-fries-2296965_1280.jpg" },
-      { name: "Cola 0,5L", desc: "Erfrischend kalt", price: 1.99, category: "getraenke", img: "https://cdn.pixabay.com/photo/2017/08/10/03/00/cola-2616579_1280.jpg" },
-      { name: "Apfeltasche", desc: "Warm und fruchtig", price: 2.49, category: "desserts", img: "https://cdn.pixabay.com/photo/2016/10/27/22/52/apple-pie-1776641_1280.jpg" },
+      { name: "Wiener Schnitzel Menü", desc: "Mit Pommes und Getränk", price: 10.99, category: "schnitzel", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Schnitzel.JPG/640px-Schnitzel.JPG" },
+      { name: "Jägerschnitzel Menü", desc: "Mit Pilzsoße, Pommes & Getränk", price: 11.49, category: "schnitzel", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/J%C3%A4gerschnitzel_Pommes.jpg/640px-J%C3%A4gerschnitzel_Pommes.jpg" },
+      { name: "Pommes Frites", desc: "Kross und heiß", price: 2.99, category: "beilagen", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/French_Fries.JPG/640px-French_Fries.JPG" },
+      { name: "Cola 0,5L", desc: "Erfrischend kalt", price: 1.99, category: "getraenke", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Coca_Cola_Glas.JPG/640px-Coca_Cola_Glas.JPG" },
+      { name: "Apfeltasche", desc: "Warm und fruchtig", price: 2.49, category: "desserts", img: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Apple_strudel_with_powdered_sugar_and_whipped_cream.jpg/640px-Apple_strudel_with_powdered_sugar_and_whipped_cream.jpg" },
     ];
 
-    let cartCount = 0;
-    let totalSum = 0;
-    const menu = document.getElementById('menu');
-    const categoryButtons = document.querySelectorAll('.sidebar button');
-    const cartCountDisplay = document.getElementById('cart-count');
-    const totalSumDisplay = document.getElementById('total-sum');
+    let cart = [];
 
     function updateCart() {
-      cartCountDisplay.innerText = `${cartCount} Artikel`;
-      totalSumDisplay.innerText = `${totalSum.toFixed(2)} €`;
+      const cartItemsDiv = document.getElementById("cart-items");
+      cartItemsDiv.innerHTML = "";
+      let count = 0;
+      let total = 0;
+      cart.forEach((item, index) => {
+        count++;
+        total += item.price;
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `${item.name} - ${item.price.toFixed(2)} € <button onclick="removeFromCart(${index})">&times;</button>`;
+        cartItemsDiv.appendChild(div);
+      });
+      document.getElementById("cart-count").innerText = `${count} Artikel`;
+      document.getElementById("total-sum").innerText = `${total.toFixed(2)} €`;
     }
 
     function addToCart(item) {
-      cartCount++;
-      totalSum += item.price;
+      cart.push(item);
+      updateCart();
+    }
+
+    function removeFromCart(index) {
+      cart.splice(index, 1);
       updateCart();
     }
 
     function checkout() {
-      alert("Bestellung wird verarbeitet...");
+      if (cart.length === 0) return alert("Warenkorb ist leer");
+      alert("Vielen Dank für Ihre Bestellung!");
+      cart = [];
+      updateCart();
     }
 
     function filterMenu(category) {
-      categoryButtons.forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
       document.querySelector(`.sidebar button[onclick*='${category}']`).classList.add('active');
+      const menu = document.getElementById('menu');
       menu.innerHTML = '';
       menuItems.filter(item => item.category === category).forEach(item => {
         const card = document.createElement('div');
@@ -183,7 +236,6 @@
       });
     }
 
-    // Initialanzeige
     filterMenu('schnitzel');
   </script></body>
 </html>
